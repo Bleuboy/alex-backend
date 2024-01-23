@@ -117,7 +117,7 @@ export class AnalyzeService {
       messages: [
         {
           role: 'system',
-          content: prompt, //this.configService.get<string>('OPENAI_API_PROMT'),
+          content: prompt,
         },
         ...texts.flatMap(
           (content) =>

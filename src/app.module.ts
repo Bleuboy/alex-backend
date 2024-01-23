@@ -11,7 +11,6 @@ import { AnalyzeModule } from './analyze/analyze.module';
       isGlobal: true,
       validationSchema: Joi.object({
         OPENAI_API_KEY: Joi.string().required(),
-        OPENAI_API_PROMT: Joi.string().required(),
       }),
     }),
     AnalyzeModule,
