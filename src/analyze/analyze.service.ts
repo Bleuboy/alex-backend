@@ -103,7 +103,7 @@ export class AnalyzeService {
     );
 
     const openAI = new OpenAI({
-      apiKey: this.configService.get<string>('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'),
+      apiKey: this.configService.get<string>('OPENAI_API_KEY'),
     });
 
     const result = await openAI.chat.completions.create({
