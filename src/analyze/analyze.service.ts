@@ -1,31 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { writeFileSync } from 'fs';
-
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import PdfParse from 'pdf-parse';
 
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 // const prompt = `
-// GerichtsschreiberGPT is precisely calibrated to extract legal text from documents and format it into valid JSON arrays, tailored for JavaScript. 
-// Your role is to summarize legal statements and categorize them as 'disputed' or 'undisputed as well  summarize legal statements and categorize them 
-//  as a legal or factual statement.' 
+// GerichtsschreiberGPT is precisely calibrated to extract legal text from documents and format it into valid JSON arrays, tailored for JavaScript.
+// Your role is to summarize legal statements and categorize them as 'disputed' or 'undisputed as well  summarize legal statements and categorize them
+//  as a legal or factual statement.'
 
 // For each statement provide:
-// a 'statement' field (summarizing the sources in the original language of the document), 
-// a 'type' (either Disputed or Undisputed), 
-// a 'claimedBy' (indicating if claimed by the Defendant or Claimant), 
+// a 'statement' field (summarizing the sources in the original language of the document),
+// a 'type' (either Disputed or Undisputed),
+// a 'claimedBy' (indicating if claimed by the Defendant or Claimant),
 // a 'sources' array (containing all quotes used to derive at the type, if disputed include the quote from the opposing party aswell)
 // a 'explanation' field (your reasoning behind the type)
-// The 'sources' array should consist of objects containing 'text' (original, unmodified quotes from the document) and 
-// 'claimedBy' (Defendant or Claimant). 
+// The 'sources' array should consist of objects containing 'text' (original, unmodified quotes from the document) and
+// 'claimedBy' (Defendant or Claimant).
 
 // The Other Statement will be used to determine if the statement is legal or factual.
-// It should also contain 
+// It should also contain
 // a 'statement2' field (explaining the statement in the original language of the document)
 // a 'claimedBy' (indicating if claimed by the Defendant or Claimant)
 // a 'type' (either Legal or Factual)
-
 
 // Examples:
 // Example 1:
@@ -48,8 +47,7 @@ import PdfParse from 'pdf-parse';
 
 // These statements describe what happened, who was involved, when and where events took place, and other details pertinent to the case
 
-
-// Always ensure the output matches this structure, adhering to JSON standards with precision in quoting and original language. 
+// Always ensure the output matches this structure, adhering to JSON standards with precision in quoting and original language.
 // The output must be strictly JSON arrays with no additional text or commentary, suitable for detailed legal text analysis and searchability in programming applications.
 // JUST RETURN JSON.
 // `;
@@ -92,14 +90,21 @@ Example 2:
 Your output must consistently match this structure for effective legal text analysis.
 `;
 
-
+/**
+ * Service for analyzing files using OpenAI.
+ */
 @Injectable()
 export class AnalyzeService {
   constructor(private readonly configService: ConfigService) {}
 
+  /**
+   * Analyzes the given files using OpenAI.
+   * @param files - The files to analyze.
+   * @returns The analysis result.
+   */
   async analyze(files: Express.Multer.File[]) {
     const texts = await Promise.all(
-      files.map(async (file) => (await PdfParse(file.buffer)).text)
+      files.map(async (file) => (await PdfParse(file.buffer)).text),
     );
 
     const openAI = new OpenAI({
@@ -114,19 +119,26 @@ export class AnalyzeService {
           role: 'system',
           content: prompt, //this.configService.get<string>('OPENAI_API_PROMT'),
         },
-        ...texts.flatMap((content) => ({
-          role: 'user',
-          content,
-        } as ChatCompletionMessageParam))
+        ...texts.flatMap(
+          (content) =>
+            ({
+              role: 'user',
+              content,
+            } as ChatCompletionMessageParam),
+        ),
       ],
     });
 
     try {
       writeFileSync('output.txt', JSON.stringify(result, null, 4));
-    } catch(ex) {
+    } catch (ex) {
       console.log(ex);
     }
 
-    return JSON.parse(result.choices[0].message.content.replace('```json', '').replace('```', ''));
+    return JSON.parse(
+      result.choices[0].message.content
+        .replace('```json', '')
+        .replace('```', ''),
+    );
   }
 }

@@ -1,7 +1,9 @@
+import Joi from 'joi';
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+
 import { AnalyzeModule } from './analyze/analyze.module';
-import Joi from 'joi';
 
 @Module({
   imports: [
